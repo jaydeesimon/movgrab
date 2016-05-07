@@ -10,7 +10,7 @@
 
 (defmacro with-started-grabber [binding & body]
   (let [[grabber-symb ^File mov] binding]
-    `(let [~grabber-symb (doto (FFmpegFrameGrabber. mov) (.start))]
+    `(let [~grabber-symb (doto (FFmpegFrameGrabber. ~mov) (.start))]
        (try
          ~@body
          (finally
@@ -35,7 +35,7 @@
 (defn temp-file [prefix suffix]
   (doto (File/createTempFile prefix suffix) (.deleteOnExit)))
 
-(defn mov->frames [^FFmpegFrameGrabber grabber]
+(defn mov->frame-files [^FFmpegFrameGrabber grabber]
   (let [frames (range 1 (.getLengthInFrames grabber) 120)
         frame-converter (Java2DFrameConverter.)]
     (map-indexed (fn [i frame-n]
@@ -66,9 +66,8 @@
 ;; lein run <some-movie-file> <some-output.pdf>
 (defn -main [& args]
   (with-started-grabber [grabber (io/file (first args))]
-    (let [frame-files (mov->frames grabber)]
-      (-> frame-files
-          (frame-diff-ratios)
-          (detect-frame-changes)
-          (slides)
-          (pdf/gen-pdf (second args))))))
+    (-> (mov->frame-files grabber)
+        (frame-diff-ratios)
+        (detect-frame-changes)
+        (slides)
+        (pdf/gen-pdf (second args)))))
