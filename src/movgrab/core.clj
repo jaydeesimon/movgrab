@@ -28,6 +28,14 @@
   (def f1 (ImageIO/read (io/file (io/resource "223.png"))))
   (.getRGB lenna 0 2))
 
+(defmacro with-started-grabber [binding & body]
+  (let [[grabber-symb ^File mov] binding]
+    `(let [~grabber-symb (doto (FFmpegFrameGrabber. mov) (.start))]
+       (try
+         ~@body
+         (finally
+           (.stop ~grabber-symb))))))
+
 ;; I based this on https://rosettacode.org/wiki/Percentage_difference_between_images
 ;; so there's plenty wrong with it but it seems to do the job for now
 ;; Also, I'm only comparing 50% of random pixels instead of all of them
@@ -100,3 +108,5 @@
 
   ;; Need to stop the grabber
   (.stop grabber))
+
+
