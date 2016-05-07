@@ -56,8 +56,7 @@
 
 (defn detect-frame-changes [frame-ratios]
   (let [std-dev (std-deviation (map :diff-ratio frame-ratios))]
-    (->> frame-ratios
-         (filter #(> (:diff-ratio %) std-dev)))))
+    (filter #(> (:diff-ratio %) std-dev) frame-ratios)))
 
 (defn slides [frame-changes]
   (concat [(:file-a (first frame-changes))]
